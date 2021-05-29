@@ -1,5 +1,8 @@
 # machine-vision-formats
 
+[![Documentation](https://docs.rs/machine-vision-formats/badge.svg)](https://docs.rs/machine-vision-formats/)
+[![Crates.io](https://img.shields.io/crates/v/machine-vision-formats.svg)](https://crates.io/crates/machine-vision-formats)
+
 Type definitions for working with machine vision cameras.
 
 This crate aims to be a lowest common denominator for working with images
