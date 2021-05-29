@@ -3,7 +3,12 @@ name = "machine-vision-formats"
 version = "0.1.0"
 authors = ["Andrew Straw <strawman@astraw.com>"]
 edition = "2018"
-categories = ["no-std", "data-structures", "hardware-support", "multimedia::images"]
+categories = ["no-std", "data-structures", "science::robotics", "multimedia::images", "computer-vision"]
+repository = "https://github.com/strawlab/machine-vision-formats"
+description = "Type definitions for working with machine vision cameras"
+license = "MIT/Apache-2.0"
+readme = "README.md"
+keywords = ["cameras", "images"]
 
 [features]
 default=["std"]
