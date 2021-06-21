@@ -8,6 +8,9 @@
 // TODO: Check if names from ffmpeg (e.g. `AV_PIX_FMT_YUVA444P`) would be
 // better.
 
+// Also note the formats at
+// https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids.
+
 #[cfg(not(feature = "std"))]
 extern crate core as std;
 
