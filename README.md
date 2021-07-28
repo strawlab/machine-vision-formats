@@ -34,7 +34,7 @@ handled. Currently, these are not specified.
 
 ## See also
 
-* [rust-cv/ndarray-image](https://github.com/rust-cv/ndarray-image)
+* [https://github.com/rust-cv/nshare](https://github.com/rust-cv/nshare)
 
 ## Test compilation with all feature variants
 
