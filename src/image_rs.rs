@@ -4,6 +4,11 @@ use crate::{
 };
 use std::ops::Deref;
 
+// We should define a macro that will create these implementation for different
+// types. Here there is a lot of code duplication for Luma and Rgb types, which
+// is bad. Currently, this is a proof-of-concept to address this issue:
+// https://github.com/strawlab/machine-vision-formats/issues/1
+
 impl<C> ImageData<Mono8> for image::ImageBuffer<image::Luma<u8>, C>
 where
     C: Deref<Target = [u8]> + AsRef<[u8]>,
