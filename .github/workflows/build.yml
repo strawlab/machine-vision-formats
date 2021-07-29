@@ -20,7 +20,7 @@ jobs:
     - name: Build
       run: cargo build
     - name: Test
-      run: cargo test
+      run: cargo test --features image-rs
 
   nostd-ubuntu:
 
