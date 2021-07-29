@@ -36,6 +36,9 @@ pub mod pixel_format;
 // re-export
 pub use pixel_format::{PixFmt, PixelFormat};
 
+#[cfg(feature = "image-rs")]
+mod image_rs;
+
 // ------------------------------- ImageBufferRef ----------------------
 
 /// A concrete type with view of image data with pixel format `F`.

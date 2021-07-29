@@ -10,8 +10,12 @@ license = "MIT/Apache-2.0"
 readme = "README.md"
 keywords = ["cameras", "images"]
 
+[dependencies]
+image = {version="0.23", optional=true, default-features=false}
+
 [features]
 default=["std"]
 
 std=[]
 alloc=[]
+image-rs=["image", "std"]
