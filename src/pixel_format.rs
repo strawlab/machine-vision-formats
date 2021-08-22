@@ -20,7 +20,18 @@ use std::convert::TryFrom;
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[non_exhaustive]
 pub enum PixFmt {
+    /// (PFNC:Mono8)
     Mono8,
+    /// (PFNC:Mono10)
+    Mono10,
+    /// (PFNC:Mono10p)
+    Mono10p,
+    /// (PFNC:Mono12)
+    Mono12,
+    /// (PFNC:Mono12p)
+    Mono12p,
+    /// (PFNC:Mono16)
+    Mono16,
     Mono32f,
     RGB8,
     RGBA8,
@@ -52,6 +63,11 @@ impl PixFmt {
         use PixFmt::*;
         match self {
             Mono8 => 8,
+            Mono10 => 16,
+            Mono10p => 10,
+            Mono12 => 16,
+            Mono12p => 12,
+            Mono16 => 16,
             Mono32f => 32,
             RGB8 => 24,
             RGBA8 => 32,
@@ -73,6 +89,11 @@ impl PixFmt {
         use PixFmt::*;
         match self {
             Mono8 => "Mono8",
+            Mono10 => "Mono10",
+            Mono10p => "Mono10p",
+            Mono12 => "Mono12",
+            Mono12p => "Mono12p",
+            Mono16 => "Mono16",
             Mono32f => "Mono32f",
             RGB8 => "RGB8",
             RGBA8 => "RGBA8",
@@ -103,6 +124,16 @@ impl std::str::FromStr for PixFmt {
         use PixFmt::*;
         if instr == "Mono8" {
             Ok(Mono8)
+        } else if instr == "Mono10" {
+            Ok(Mono10)
+        } else if instr == "Mono10p" {
+            Ok(Mono10p)
+        } else if instr == "Mono12" {
+            Ok(Mono12)
+        } else if instr == "Mono12p" {
+            Ok(Mono12p)
+        } else if instr == "Mono16" {
+            Ok(Mono16)
         } else if instr == "Mono32f" {
             Ok(Mono32f)
         } else if instr == "RGB8" {
@@ -141,8 +172,9 @@ impl std::str::FromStr for PixFmt {
 fn test_pixfmt_roundtrip() {
     use PixFmt::*;
     let fmts = [
-        Mono8, Mono32f, RGB8, RGBA8, BayerRG8, BayerRG32f, BayerBG8, BayerBG32f, BayerGB8,
-        BayerGB32f, BayerGR8, BayerGR32f, YUV444, YUV422, NV12,
+        Mono8, Mono10, Mono10p, Mono12, Mono12p, Mono16, Mono32f, RGB8, RGBA8, BayerRG8,
+        BayerRG32f, BayerBG8, BayerBG32f, BayerGB8, BayerGB32f, BayerGR8, BayerGR32f, YUV444,
+        YUV422, NV12,
     ];
     for fmt in &fmts {
         let fmt_str = fmt.as_str();
@@ -169,6 +201,11 @@ where
 
     fn try_from(orig: std::marker::PhantomData<FMT>) -> Result<PixFmt, Self::Error> {
         try_downcast!(Mono8, &orig);
+        try_downcast!(Mono10, &orig);
+        try_downcast!(Mono10p, &orig);
+        try_downcast!(Mono12, &orig);
+        try_downcast!(Mono12p, &orig);
+        try_downcast!(Mono16, &orig);
         try_downcast!(Mono32f, &orig);
         try_downcast!(RGB8, &orig);
         try_downcast!(RGBA8, &orig);
@@ -206,6 +243,11 @@ fn test_compile_runtime_roundtrip() {
         }};
     }
     gen_test!(Mono8);
+    gen_test!(Mono10);
+    gen_test!(Mono10p);
+    gen_test!(Mono12);
+    gen_test!(Mono12p);
+    gen_test!(Mono16);
     gen_test!(Mono32f);
     gen_test!(RGB8);
     gen_test!(RGBA8);
@@ -242,6 +284,31 @@ macro_rules! define_pixel_format {
 define_pixel_format!(
     Mono8,
     "Luminance, 1 byte per pixel. Sometimes also called Gray8."
+);
+define_pixel_format!(
+    Mono10,
+    // TODO: endian?
+    "Luminance, 2 bytes per pixel."
+);
+define_pixel_format!(
+    Mono10p,
+    // TODO: endian?
+    "Luminance, 10 bits per pixel."
+);
+define_pixel_format!(
+    Mono12,
+    // TODO: endian?
+    "Luminance, 2 bytes per pixel."
+);
+define_pixel_format!(
+    Mono12p,
+    // TODO: endian?
+    "Luminance, 12 bits per pixel."
+);
+define_pixel_format!(
+    Mono16,
+    // TODO: endian?
+    "Luminance, 2 bytes per pixel."
 );
 define_pixel_format!(
     Mono32f,
