@@ -23,6 +23,7 @@ pub enum PixFmt {
     Mono8,
     Mono32f,
     RGB8,
+    RGBA8,
     BayerRG8,
     BayerRG32f,
     BayerBG8,
@@ -53,6 +54,7 @@ impl PixFmt {
             Mono8 => 8,
             Mono32f => 32,
             RGB8 => 24,
+            RGBA8 => 32,
             BayerRG8 => 8,
             BayerRG32f => 32,
             BayerBG8 => 8,
@@ -73,6 +75,7 @@ impl PixFmt {
             Mono8 => "Mono8",
             Mono32f => "Mono32f",
             RGB8 => "RGB8",
+            RGBA8 => "RGBA8",
             BayerRG8 => "BayerRG8",
             BayerRG32f => "BayerRG32f",
             BayerBG8 => "BayerBG8",
@@ -104,6 +107,8 @@ impl std::str::FromStr for PixFmt {
             Ok(Mono32f)
         } else if instr == "RGB8" {
             Ok(RGB8)
+        } else if instr == "RGBA8" {
+            Ok(RGBA8)
         } else if instr == "BayerRG8" {
             Ok(BayerRG8)
         } else if instr == "BayerRG32f" {
@@ -136,8 +141,8 @@ impl std::str::FromStr for PixFmt {
 fn test_pixfmt_roundtrip() {
     use PixFmt::*;
     let fmts = [
-        Mono8, Mono32f, RGB8, BayerRG8, BayerRG32f, BayerBG8, BayerBG32f, BayerGB8, BayerGB32f,
-        BayerGR8, BayerGR32f, YUV444, YUV422, NV12,
+        Mono8, Mono32f, RGB8, RGBA8, BayerRG8, BayerRG32f, BayerBG8, BayerBG32f, BayerGB8,
+        BayerGB32f, BayerGR8, BayerGR32f, YUV444, YUV422, NV12,
     ];
     for fmt in &fmts {
         let fmt_str = fmt.as_str();
@@ -166,6 +171,7 @@ where
         try_downcast!(Mono8, &orig);
         try_downcast!(Mono32f, &orig);
         try_downcast!(RGB8, &orig);
+        try_downcast!(RGBA8, &orig);
         try_downcast!(BayerRG8, &orig);
         try_downcast!(BayerRG32f, &orig);
         try_downcast!(BayerBG8, &orig);
@@ -202,6 +208,7 @@ fn test_compile_runtime_roundtrip() {
     gen_test!(Mono8);
     gen_test!(Mono32f);
     gen_test!(RGB8);
+    gen_test!(RGBA8);
     gen_test!(BayerRG8);
     gen_test!(BayerRG32f);
     gen_test!(BayerBG8);
@@ -247,6 +254,12 @@ define_pixel_format!(
 
 Also sometimes called `RGB8packed`."
 );
+
+define_pixel_format!(
+    RGBA8,
+    "Red, Green, Blue, Alpha, 1 byte each, total 4 bytes per pixel."
+);
+
 define_pixel_format!(BayerRG8, "Bayer Red Green pattern, 1 byte per pixel.");
 define_pixel_format!(BayerRG32f, "Bayer Red Green pattern, 4 bytes per pixel.");
 define_pixel_format!(BayerBG8, "Bayer Blue Green pattern, 1 byte per pixel.");
