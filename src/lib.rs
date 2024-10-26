@@ -216,6 +216,20 @@ impl<S: ImageStride<F>, F> AsImageStride<F> for S {
     }
 }
 
+/// A mutable image with a stride.
+pub trait ImageMutStride<F>: ImageMutData<F> + Stride {}
+impl<S: ImageMutData<F> + Stride, F> ImageMutStride<F> for S {}
+
+/// Can be converted into `ImageMutStride`.
+pub trait AsImageMutStride<F>: ImageMutStride<F> {
+    fn as_image_mut_stride(&self) -> &dyn ImageMutStride<F>;
+}
+impl<S: ImageMutStride<F>, F> AsImageMutStride<F> for S {
+    fn as_image_mut_stride(&self) -> &dyn ImageMutStride<F> {
+        self
+    }
+}
+
 #[cfg(any(feature = "std", feature = "alloc"))]
 /// An image with a stride which can be moved into `Vec<u8>`.
 pub trait OwnedImageStride<F>: AsImageStride<F> + ImageStride<F> + Into<Vec<u8>> {}
