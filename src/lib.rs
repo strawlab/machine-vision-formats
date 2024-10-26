@@ -15,6 +15,13 @@
 //! - [Stride] is implemented for images with strided data (i.e. each image row
 //!    is encoded with exactly the same number of bytes, which may including
 //!    padding).
+//! - Compound traits combine these basic traits. [ImageStride] implements both
+//!   [ImageData] and [Stride]. [ImageMutStride] implements [ImageMutData] and
+//!   [Stride]. [OwnedImageStride] implements [AsImageStride], [ImageStride],
+//!   and [Into<Vec<`u8`>>].
+//! - Converter traits: [AsImageData] allows converting to `&dyn ImageData`,
+//!   [AsImageStride] to `&dyn ImageStride`, and [AsImageMutStride] to `&dyn
+//!   ImageMutStride`.
 //!
 //! This crate is used extensively in [Strand
 //! Camera](https://github.com/strawlab/strand-braid).
