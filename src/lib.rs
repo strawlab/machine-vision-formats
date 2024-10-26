@@ -141,7 +141,7 @@ pub trait ImageData<F> {
     /// This method may be deprecated in factor of `buffer_ref`.
     #[inline]
     fn image_data(&self) -> &[u8] {
-        &self.buffer_ref().data
+        self.buffer_ref().data
     }
     /// Returns the image buffer specified by pixel format `F`.
     ///
