@@ -274,5 +274,5 @@ define_pixel_format!(NV12, "NV12 format, average 12 bits per pixel");
 
 #[test]
 fn test_debug_types() {
-    format!("{:?}", BayerRG8 {});
+    let _ = format!("{:?}", BayerRG8 {});
 }
