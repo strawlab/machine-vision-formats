@@ -2,33 +2,31 @@ name: build
 
 on:
   push:
-    branches: [ '**' ]
+    branches: ["**"]
   pull_request:
-    branches: [ '**' ]
+    branches: ["**"]
 
 jobs:
   std-ubuntu:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build (no std, no alloc)
-      run: cargo build --no-default-features
-    - name: Build (no std)
-      run: cargo build --no-default-features --features alloc
-    - name: Build
-      run: cargo build
-    - name: Test
-      run: cargo test
+      - uses: actions/checkout@v4
+      - name: Build (no std, no alloc)
+        run: cargo build --no-default-features
+      - name: Build (no std)
+        run: cargo build --no-default-features --features alloc
+      - name: Build
+        run: cargo build
+      - name: Test
+        run: cargo test
 
   nostd-ubuntu:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Install ARM target
-      run: rustup target add thumbv7em-none-eabihf
-    - name: Build
-      run: cargo build --no-default-features --target thumbv7em-none-eabihf
+      - uses: actions/checkout@v4
+      - name: Install ARM target
+        run: rustup target add thumbv7em-none-eabihf
+      - name: Build
+        run: cargo build --no-default-features --target thumbv7em-none-eabihf
