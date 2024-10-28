@@ -1,5 +1,4 @@
-//! Implementations of specific pixel formats.
-//
+//! Implementations of specific pixel formats
 
 // TODO: Check if we should use [PFNC (Pixel Format Naming
 // Convention)](https://www.emva.org/wp-content/uploads/GenICamPixelFormatValues.pdf)

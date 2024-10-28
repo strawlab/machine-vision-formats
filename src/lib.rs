@@ -1,4 +1,5 @@
-//! Type definitions for working with machine vision cameras.
+//! Types and traits for working with raw image data from machine vision
+//! cameras.
 //!
 //! This crate aims to be a lowest common denominator for working with images
 //! from machine vision cameras from companies such as Basler, FLIR, and AVT.
@@ -6,6 +7,10 @@
 //! - Can be compiled without standard library support (`no_std`).
 //! - Includes strongly-typed pixel formats in the [pixel_format] module (e.g.
 //!   [pixel_format::RGB8] and [pixel_format::Mono8]) to ensure correct API use.
+//! - Includes types to efficiently iterate through images respecting strided
+//!   layouts in the [iter] module.
+//! - Includes structs which reference image data in the [image_ref] module.
+//! - Includes struct which owns image data in the [owned] module.
 //!
 //! Additionally several traits are defined to describe image data:
 //!
@@ -17,8 +22,9 @@
 //!    padding).
 //! - Compound traits combine these basic traits. [ImageStride] implements both
 //!   [ImageData] and [Stride]. [ImageMutStride] implements [ImageMutData] and
-//!   [Stride]. [OwnedImageStride] implements [AsImageStride], [ImageStride],
-//!   and [Into<Vec<`u8`>>].
+//!   [Stride]. [OwnedImage] implements [AsImageData], [ImageData], and
+//!   [Into<Vec<`u8`>>]. [OwnedImageStride] implements [AsImageStride],
+//!   [ImageStride], and [Into<Vec<`u8`>>].
 //! - Converter traits: [AsImageData] allows converting to `&dyn ImageData`,
 //!   [AsImageStride] to `&dyn ImageStride`, and [AsImageMutStride] to `&dyn
 //!   ImageMutStride`.
@@ -36,7 +42,10 @@ extern crate alloc;
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 
-// TODO: Should we move module `pixel_format` to own crate?
+pub mod image_ref;
+pub mod iter;
+#[cfg(any(feature = "std", feature = "alloc"))]
+pub mod owned;
 #[allow(non_camel_case_types)]
 pub mod pixel_format;
 
@@ -56,6 +65,12 @@ pub struct ImageBufferRef<'a, F> {
     pub pixel_format: std::marker::PhantomData<F>,
     /// The raw bytes of the image buffer.
     pub data: &'a [u8],
+}
+
+impl<F: PixelFormat> std::fmt::Debug for ImageBufferRef<'_, F> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("ImageBufferRef").finish_non_exhaustive()
+    }
 }
 
 impl<'a, F> ImageBufferRef<'a, F> {
@@ -88,6 +103,12 @@ pub struct ImageBufferMutRef<'a, F> {
     pub data: &'a mut [u8],
 }
 
+impl<F: PixelFormat> std::fmt::Debug for ImageBufferMutRef<'_, F> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("ImageBufferMutRef").finish_non_exhaustive()
+    }
+}
+
 impl<'a, F> ImageBufferMutRef<'a, F> {
     #[inline]
     pub fn new(data: &'a mut [u8]) -> Self {
@@ -118,6 +139,13 @@ pub struct ImageBuffer<F> {
     pub pixel_format: std::marker::PhantomData<F>,
     /// The raw bytes of the image buffer.
     pub data: Vec<u8>,
+}
+
+#[cfg(any(feature = "std", feature = "alloc"))]
+impl<F: PixelFormat> std::fmt::Debug for ImageBuffer<F> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("ImageBuffer").finish_non_exhaustive()
+    }
 }
 
 #[cfg(any(feature = "std", feature = "alloc"))]
@@ -163,6 +191,9 @@ pub trait ImageData<F> {
     /// copy, use the `Into<Vec<u8>>` trait required by the OwnedImage trait.
     #[cfg(any(feature = "std", feature = "alloc"))]
     fn buffer(self) -> ImageBuffer<F>;
+    // fn pixel_format(&self) -> std::marker::PhantomData<F> {
+    //     std::marker::PhantomData
+    // }
 }
 
 /// A mutable image.
@@ -199,6 +230,7 @@ impl<S: ImageData<F>, F> AsImageData<F> for S {
 
 #[cfg(any(feature = "std", feature = "alloc"))]
 /// An image which can be moved into `Vec<u8>`.
+// TODO: any breaking release should add Clone as a supertrait
 pub trait OwnedImage<F>: AsImageData<F> + ImageData<F> + Into<Vec<u8>> {}
 
 #[cfg(any(feature = "std", feature = "alloc"))]
@@ -211,7 +243,8 @@ where
 
 /// An image with a stride.
 pub trait ImageStride<F>: ImageData<F> + Stride {}
-impl<S: ImageData<F> + Stride, F> ImageStride<F> for S {}
+
+impl<S, F> ImageStride<F> for S where S: ImageData<F> + Stride {}
 
 /// Can be converted into `ImageStride`.
 pub trait AsImageStride<F>: ImageStride<F> {
@@ -225,7 +258,7 @@ impl<S: ImageStride<F>, F> AsImageStride<F> for S {
 
 /// A mutable image with a stride.
 pub trait ImageMutStride<F>: ImageMutData<F> + Stride {}
-impl<S: ImageMutData<F> + Stride, F> ImageMutStride<F> for S {}
+impl<S, F> ImageMutStride<F> for S where S: ImageMutData<F> + Stride {}
 
 /// Can be converted into `ImageMutStride`.
 pub trait AsImageMutStride<F>: ImageMutStride<F> {
@@ -239,6 +272,7 @@ impl<S: ImageMutStride<F>, F> AsImageMutStride<F> for S {
 
 #[cfg(any(feature = "std", feature = "alloc"))]
 /// An image with a stride which can be moved into `Vec<u8>`.
+// TODO: any breaking release should add Clone as a supertrait
 pub trait OwnedImageStride<F>: AsImageStride<F> + ImageStride<F> + Into<Vec<u8>> {}
 #[cfg(any(feature = "std", feature = "alloc"))]
 impl<S, F> OwnedImageStride<F> for S
