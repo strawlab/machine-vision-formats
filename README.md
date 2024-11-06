@@ -27,6 +27,9 @@ submit an issue or, better, pull request for any additions needed.
 We could also address the question of how endian-ness and packed-ness are
 handled. Currently, these are not specified.
 
+We should investigate [`rgb`](https://crates.io/crates/rgb) and [`imgref`](https://crates.io/crates/imgref)
+and see if this crate is completely redundant with those.
+
 ## See also
 
 - [https://github.com/rust-cv/nshare](https://github.com/rust-cv/nshare)
