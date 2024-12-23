@@ -12,7 +12,7 @@ categories = [
 ]
 repository = "https://github.com/strawlab/machine-vision-formats"
 description = "Types and traits for working with raw image data from machine vision cameras"
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 readme = "README.md"
 keywords = ["cameras", "images"]
 rust-version = "1.53"
