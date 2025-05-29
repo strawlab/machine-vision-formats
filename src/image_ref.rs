@@ -51,7 +51,7 @@ impl<F: PixelFormat> std::fmt::Debug for ImageRef<'_, F> {
     }
 }
 
-impl<'a, FMT: PixelFormat> ImageData<FMT> for ImageRef<'a, FMT> {
+impl<FMT: PixelFormat> ImageData<FMT> for ImageRef<'_, FMT> {
     fn width(&self) -> u32 {
         self.width
     }
@@ -68,7 +68,7 @@ impl<'a, FMT: PixelFormat> ImageData<FMT> for ImageRef<'a, FMT> {
     }
 }
 
-impl<'a, FMT: PixelFormat> Stride for ImageRef<'a, FMT> {
+impl<FMT: PixelFormat> Stride for ImageRef<'_, FMT> {
     fn stride(&self) -> usize {
         self.stride
     }
@@ -123,7 +123,7 @@ impl<F: PixelFormat> std::fmt::Debug for ImageRefMut<'_, F> {
     }
 }
 
-impl<'a, FMT: PixelFormat> ImageData<FMT> for ImageRefMut<'a, FMT> {
+impl<FMT: PixelFormat> ImageData<FMT> for ImageRefMut<'_, FMT> {
     fn width(&self) -> u32 {
         self.width
     }
@@ -140,13 +140,13 @@ impl<'a, FMT: PixelFormat> ImageData<FMT> for ImageRefMut<'a, FMT> {
     }
 }
 
-impl<'a, FMT: PixelFormat> ImageMutData<FMT> for ImageRefMut<'a, FMT> {
+impl<FMT: PixelFormat> ImageMutData<FMT> for ImageRefMut<'_, FMT> {
     fn buffer_mut_ref(&mut self) -> ImageBufferMutRef<'_, FMT> {
         ImageBufferMutRef::new(self.buf)
     }
 }
 
-impl<'a, FMT: PixelFormat> Stride for ImageRefMut<'a, FMT> {
+impl<FMT: PixelFormat> Stride for ImageRefMut<'_, FMT> {
     fn stride(&self) -> usize {
         self.stride
     }

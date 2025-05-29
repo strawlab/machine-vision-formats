@@ -145,13 +145,13 @@ mod test {
         buf: &'a [u8],
     }
 
-    impl<'a> Stride for RoiIm<'a> {
+    impl Stride for RoiIm<'_> {
         fn stride(&self) -> usize {
             self.stride
         }
     }
 
-    impl<'a> ImageData<Mono8> for RoiIm<'a> {
+    impl ImageData<Mono8> for RoiIm<'_> {
         fn width(&self) -> u32 {
             self.width
         }
@@ -177,13 +177,13 @@ mod test {
         buf: &'a mut [u8],
     }
 
-    impl<'a> Stride for RoiImMut<'a> {
+    impl Stride for RoiImMut<'_> {
         fn stride(&self) -> usize {
             self.stride
         }
     }
 
-    impl<'a> ImageData<Mono8> for RoiImMut<'a> {
+    impl ImageData<Mono8> for RoiImMut<'_> {
         fn width(&self) -> u32 {
             self.width
         }
@@ -202,7 +202,7 @@ mod test {
         }
     }
 
-    impl<'a> ImageMutData<Mono8> for RoiImMut<'a> {
+    impl ImageMutData<Mono8> for RoiImMut<'_> {
         fn buffer_mut_ref(&mut self) -> ImageBufferMutRef<'_, Mono8> {
             ImageBufferMutRef {
                 data: self.buf,
@@ -216,11 +216,11 @@ mod test {
         const STRIDE: usize = 10;
         const ORIG_W: usize = 10;
         const ORIG_H: usize = 10;
-        let mut image_data = vec![0u8; STRIDE * ORIG_H];
+        let mut image_data = [0u8; STRIDE * ORIG_H];
 
         // fill with useful pattern
-        for row in 0..ORIG_H as usize {
-            for col in 0..ORIG_W as usize {
+        for row in 0..ORIG_H {
+            for col in 0..ORIG_W {
                 image_data[row * STRIDE + col] = (row * 10_usize + col) as u8;
             }
         }
@@ -249,11 +249,11 @@ mod test {
         const STRIDE: usize = 10;
         const ORIG_W: usize = 10;
         const ORIG_H: usize = 10;
-        let mut image_data = vec![0u8; STRIDE * ORIG_H];
+        let mut image_data = [0u8; STRIDE * ORIG_H];
 
         // fill with useful pattern
-        for row in 0..ORIG_H as usize {
-            for col in 0..ORIG_W as usize {
+        for row in 0..ORIG_H {
+            for col in 0..ORIG_W {
                 image_data[row * STRIDE + col] = (row * 10_usize + col) as u8;
             }
         }
@@ -284,11 +284,11 @@ mod test {
         const STRIDE: usize = 10;
         const ORIG_W: usize = 10;
         const ORIG_H: usize = 10;
-        let mut image_data = vec![0u8; STRIDE * ORIG_H];
+        let mut image_data = [0u8; STRIDE * ORIG_H];
 
         // fill with useful pattern
-        for row in 0..ORIG_H as usize {
-            for col in 0..ORIG_W as usize {
+        for row in 0..ORIG_H {
+            for col in 0..ORIG_W {
                 image_data[row * STRIDE + col] = (row * 10_usize + col) as u8;
             }
         }
@@ -338,11 +338,11 @@ mod test {
         const STRIDE: usize = 10;
         const ORIG_W: usize = 10;
         const ORIG_H: usize = 10;
-        let mut image_data = vec![0u8; STRIDE * ORIG_H];
+        let mut image_data = [0u8; STRIDE * ORIG_H];
 
         // fill with useful pattern
-        for row in 0..ORIG_H as usize {
-            for col in 0..ORIG_W as usize {
+        for row in 0..ORIG_H {
+            for col in 0..ORIG_W {
                 image_data[row * STRIDE + col] = (row * 10_usize + col) as u8;
             }
         }

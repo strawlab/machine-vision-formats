@@ -18,8 +18,8 @@
 //!   buffer.
 //! - [ImageMutData] is implemented for images with mutable data.
 //! - [Stride] is implemented for images with strided data (i.e. each image row
-//!    is encoded with exactly the same number of bytes, which may including
-//!    padding).
+//!   is encoded with exactly the same number of bytes, which may including
+//!   padding).
 //! - Compound traits combine these basic traits. [ImageStride] implements both
 //!   [ImageData] and [Stride]. [ImageMutStride] implements [ImageMutData] and
 //!   [Stride]. [OwnedImage] implements [AsImageData], [ImageData], and
