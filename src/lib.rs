@@ -46,6 +46,10 @@ pub mod image_ref;
 pub mod iter;
 #[cfg(any(feature = "std", feature = "alloc"))]
 pub mod owned;
+
+#[cfg(any(feature = "std", feature = "alloc"))]
+pub mod cow;
+
 #[allow(non_camel_case_types)]
 pub mod pixel_format;
 
