@@ -14,7 +14,7 @@ use crate::{
 
 // -----
 
-/// An owned image buffer with pixel format `FMT`.
+/// An owned image buffer with strided pixel format `FMT`.
 #[derive(Clone)]
 pub struct OImage<FMT: PixelFormat> {
     buf: Vec<u8>,
