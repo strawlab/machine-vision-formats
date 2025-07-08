@@ -22,7 +22,7 @@ where
         let height = self.height() as usize;
         let buf = self.buffer_ref().data;
         let max_len = buf.len().min(stride * height);
-        let buf = &buf[..max_len.min(max_len)];
+        let buf = &buf[..max_len];
 
         RowChunksExact {
             buf,
@@ -86,7 +86,7 @@ where
         let height = self.height() as usize;
         let buf = self.buffer_mut_ref().data;
         let max_len = buf.len().min(stride * height);
-        let buf = &mut buf[..max_len.min(max_len)];
+        let buf = &mut buf[..max_len];
         RowChunksExactMut {
             buf,
             stride,
