@@ -65,14 +65,15 @@ impl<FMT: PixelFormat> OImage<FMT> {
         let fmt = crate::pixel_format::pixfmt::<FMT>().unwrap();
         let min_stride = fmt.bits_per_pixel() as usize * width as usize / 8;
 
-        if height == 0 {
-            return None;
+        if height > 0 {
+            // Check buffer size. (With height==0, we accept zero length
+            // buffer.)
+            let sz = stride * (height as usize - 1) + min_stride;
+            if buf.len() < sz {
+                return None;
+            }
         }
-        let sz = stride * (height as usize - 1) + min_stride;
 
-        if buf.len() < sz {
-            return None;
-        }
         Some(Self {
             width,
             height,
@@ -87,7 +88,11 @@ impl<FMT: PixelFormat> OImage<FMT> {
         let fmt = crate::pixel_format::pixfmt::<FMT>().unwrap();
         let valid_stride = fmt.bits_per_pixel() as usize * width as usize / 8;
 
-        let sz = stride * (height as usize - 1) + valid_stride;
+        let sz = if height == 0 {
+            0
+        } else {
+            stride * (height as usize - 1) + valid_stride
+        };
         let buf = vec![0u8; sz];
         Some(Self {
             width,
@@ -162,5 +167,32 @@ impl<F: PixelFormat> From<OImage<F>> for Vec<u8> {
 impl<F: PixelFormat> From<Box<OImage<F>>> for Vec<u8> {
     fn from(orig: Box<OImage<F>>) -> Vec<u8> {
         orig.buf
+    }
+}
+
+#[test]
+fn test_alloc() {
+    // test the key size of 0 and some other arbitrary size.
+    for width in [0, 640] {
+        for height in [0, 480] {
+            let min_stride = (width * 3) as usize; // RGB8 has 3 bytes per pixel
+            for stride in [min_stride, min_stride + 10] {
+                // Test zeros.
+                let img =
+                    OImage::<crate::pixel_format::RGB8>::zeros(width, height, stride).unwrap();
+                assert_eq!(img.width(), width);
+                assert_eq!(img.height(), height);
+                assert_eq!(img.stride(), stride);
+
+                // Test new.
+                let sz = height as usize * stride;
+                let buf = vec![0u8; sz]; // allocate buffer
+                let img =
+                    OImage::<crate::pixel_format::RGB8>::new(width, height, stride, buf).unwrap();
+                assert_eq!(img.width(), width);
+                assert_eq!(img.height(), height);
+                assert_eq!(img.stride(), stride);
+            }
+        }
     }
 }
