@@ -40,6 +40,33 @@ pub enum CowImage<'a, F: PixelFormat> {
     Owned(OImage<F>),
 }
 
+impl<'a, F: PixelFormat> CowImage<'a, F> {
+    /// Consumes the image and returns an owned image.
+    ///
+    /// For borrowed images, this copies the data into a new image.
+    /// For owned images, this moves the existing data without copying.
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use machine_vision_formats::{cow::CowImage, owned::OImage, pixel_format::Mono8, ImageData};
+    /// let owned_image = OImage::<Mono8>::new(4, 4, 4, vec![255u8; 16]).unwrap();
+    /// let cow_image = CowImage::from(owned_image);
+    /// let owned = cow_image.owned();
+    /// ```
+    pub fn owned(self) -> OImage<F> {
+        match self {
+            CowImage::Borrowed(im) => {
+                let w = im.width();
+                let h = im.height();
+                let s = im.stride();
+                let buf = im.buffer();
+                crate::owned::OImage::new(w, h, s, buf.data).unwrap()
+            }
+            CowImage::Owned(im) => im,
+        }
+    }
+}
+
 impl<'a, F: PixelFormat> From<ImageRef<'a, F>> for CowImage<'a, F> {
     /// Creates a [`CowImage::Borrowed`] from an [`ImageRef`].
     ///
