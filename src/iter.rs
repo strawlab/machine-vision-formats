@@ -25,6 +25,7 @@ where
         let buf = &buf[..max_len];
 
         RowChunksExact {
+            height,
             buf,
             stride,
             valid_stride,
@@ -33,6 +34,7 @@ where
 }
 
 pub struct RowChunksExact<'a> {
+    height: usize,
     buf: &'a [u8],
     stride: usize,
     valid_stride: usize,
@@ -51,19 +53,38 @@ impl<'a> Iterator for RowChunksExact<'a> {
     type Item = &'a [u8];
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.buf.len() >= self.valid_stride {
-            let mut data: &'a [u8] = &[];
-            std::mem::swap(&mut self.buf, &mut data);
-            if data.len() > self.stride {
-                let (first, rest) = data.split_at(self.stride);
-                self.buf = rest;
-                Some(&first[..self.valid_stride])
-            } else {
-                Some(&data[..self.valid_stride])
-            }
-        } else {
-            None
+        if self.height == 0 {
+            return None;
         }
+        debug_assert!(self.buf.len() >= self.valid_stride);
+        let mut data: &'a [u8] = &[];
+        std::mem::swap(&mut self.buf, &mut data);
+        self.height -= 1;
+        if data.len() > self.stride {
+            let (first, rest) = data.split_at(self.stride);
+            self.buf = rest;
+            Some(&first[..self.valid_stride])
+        } else {
+            Some(&data[..self.valid_stride])
+        }
+    }
+}
+
+impl<'a> DoubleEndedIterator for RowChunksExact<'a> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.height == 0 {
+            return None;
+        }
+        debug_assert!(self.buf.len() >= self.valid_stride);
+        // self.buf begins with first row. We want to return the last row, which
+        // may be partial.
+        let last_row_start = (self.height - 1) * self.stride;
+        let mut data: &[u8] = &[];
+        std::mem::swap(&mut self.buf, &mut data);
+        let (first, rest) = data.split_at(last_row_start);
+        self.buf = first;
+        self.height -= 1;
+        Some(&rest[..self.valid_stride])
     }
 }
 
@@ -88,6 +109,7 @@ where
         let max_len = buf.len().min(stride * height);
         let buf = &mut buf[..max_len];
         RowChunksExactMut {
+            height,
             buf,
             stride,
             valid_stride,
@@ -96,6 +118,7 @@ where
 }
 
 pub struct RowChunksExactMut<'a> {
+    height: usize,
     buf: &'a mut [u8],
     stride: usize,
     valid_stride: usize,
@@ -114,19 +137,38 @@ impl<'a> Iterator for RowChunksExactMut<'a> {
     type Item = &'a mut [u8];
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.buf.len() >= self.valid_stride {
-            let mut data: &'a mut [u8] = &mut [];
-            std::mem::swap(&mut self.buf, &mut data);
-            if data.len() > self.stride {
-                let (first, rest) = data.split_at_mut(self.stride);
-                self.buf = rest;
-                Some(&mut first[..self.valid_stride])
-            } else {
-                Some(&mut data[..self.valid_stride])
-            }
-        } else {
-            None
+        if self.height == 0 {
+            return None;
         }
+        debug_assert!(self.buf.len() >= self.valid_stride);
+        let mut data: &'a mut [u8] = &mut [];
+        std::mem::swap(&mut self.buf, &mut data);
+        self.height -= 1;
+        if data.len() > self.stride {
+            let (first, rest) = data.split_at_mut(self.stride);
+            self.buf = rest;
+            Some(&mut first[..self.valid_stride])
+        } else {
+            Some(&mut data[..self.valid_stride])
+        }
+    }
+}
+
+impl<'a> DoubleEndedIterator for RowChunksExactMut<'a> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.height == 0 {
+            return None;
+        }
+        debug_assert!(self.buf.len() >= self.valid_stride);
+        // self.buf begins with first row. We want to return the last row, which
+        // may be partial.
+        let last_row_start = (self.height - 1) * self.stride;
+        let mut data: &'a mut [u8] = &mut [];
+        std::mem::swap(&mut self.buf, &mut data);
+        let (first, rest) = data.split_at_mut(last_row_start);
+        self.buf = first;
+        self.height -= 1;
+        Some(&mut rest[..self.valid_stride])
     }
 }
 
@@ -299,7 +341,7 @@ mod test {
         let (row, col) = (2, 2);
 
         {
-            // create image of this ROI
+            // create mutable image of this ROI
             let mut im = RoiImMut {
                 width,
                 height,
@@ -353,7 +395,7 @@ mod test {
         let (row, col) = (6, 7);
 
         {
-            // create image of this ROI
+            // create mutable image of this ROI
             let mut im = RoiImMut {
                 width,
                 height,
@@ -395,5 +437,139 @@ mod test {
         assert_eq!(rowchunk_iter.next(), Some(&[187, 188, 189][..]));
         assert_eq!(rowchunk_iter.next(), Some(&[197, 198, 199][..]));
         assert_eq!(rowchunk_iter.next(), None);
+    }
+
+    #[test]
+    fn test_mut_roi_reverse_iterator() {
+        const STRIDE: usize = 10;
+        const ORIG_W: usize = 10;
+        const ORIG_H: usize = 10;
+        let mut image_data = [0u8; STRIDE * ORIG_H];
+
+        // fill with useful pattern
+        for row in 0..ORIG_H {
+            for col in 0..ORIG_W {
+                image_data[row * STRIDE + col] = (row * 10_usize + col) as u8;
+            }
+        }
+
+        // generate an ROI
+        let width = 2;
+        let height = 4;
+        let (row, col) = (2, 2);
+
+        {
+            // create mutable image of this ROI
+            let mut im = RoiImMut {
+                width,
+                height,
+                stride: STRIDE,
+                buf: &mut image_data[(row * STRIDE + col)..],
+            };
+
+            // test length of backwards iterator
+            {
+                let mut rowchunk_iter = im.rowchunks_exact_mut();
+                assert!(rowchunk_iter.next_back().is_some());
+                assert!(rowchunk_iter.next_back().is_some());
+                assert!(rowchunk_iter.next_back().is_some());
+                assert!(rowchunk_iter.next_back().is_some());
+                assert!(rowchunk_iter.next_back().is_none());
+            }
+
+            // test interleaved forward and backward iteration
+            {
+                let mut rowchunk_iter = im.rowchunks_exact_mut();
+                let mut row5 = rowchunk_iter.next_back();
+                assert_eq!(row5, Some(&mut [52, 53][..]));
+                row5.as_mut().unwrap()[0] += 100;
+                row5.as_mut().unwrap()[1] += 100;
+                let mut row2 = rowchunk_iter.next();
+                assert_eq!(row2, Some(&mut [22, 23][..]));
+                row2.as_mut().unwrap()[0] += 100;
+                row2.as_mut().unwrap()[1] += 100;
+
+                let mut row4 = rowchunk_iter.next_back();
+                assert_eq!(row4, Some(&mut [42, 43][..]));
+                row4.as_mut().unwrap()[0] += 100;
+                row4.as_mut().unwrap()[1] += 100;
+
+                let mut row3 = rowchunk_iter.next();
+                assert_eq!(row3, Some(&mut [32, 33][..]));
+                row3.as_mut().unwrap()[0] += 100;
+                row3.as_mut().unwrap()[1] += 100;
+
+                assert_eq!(rowchunk_iter.next_back(), None);
+            }
+        }
+
+        // create image of this ROI
+        let im = RoiIm {
+            width,
+            height,
+            stride: STRIDE,
+            buf: &image_data[(row * STRIDE + col)..],
+        };
+
+        let mut rowchunk_iter = im.rowchunks_exact();
+        assert_eq!(rowchunk_iter.next(), Some(&[122, 123][..]));
+        assert_eq!(rowchunk_iter.next(), Some(&[132, 133][..]));
+        assert_eq!(rowchunk_iter.next(), Some(&[142, 143][..]));
+        assert_eq!(rowchunk_iter.next(), Some(&[152, 153][..]));
+        assert_eq!(rowchunk_iter.next(), None);
+    }
+
+    #[test]
+    fn test_roi_reverse_iterator() {
+        const STRIDE: usize = 10;
+        const ORIG_W: usize = 10;
+        const ORIG_H: usize = 10;
+        let mut image_data = [0u8; STRIDE * ORIG_H];
+
+        // fill with useful pattern
+        for row in 0..ORIG_H {
+            for col in 0..ORIG_W {
+                image_data[row * STRIDE + col] = (row * 10_usize + col) as u8;
+            }
+        }
+
+        // generate an ROI
+        let width = 2;
+        let height = 4;
+        let (row, col) = (2, 2);
+
+        {
+            // create image of this ROI
+            let im = RoiIm {
+                width,
+                height,
+                stride: STRIDE,
+                buf: &image_data[(row * STRIDE + col)..],
+            };
+
+            // test length of backwards iterator
+            {
+                let mut rowchunk_iter = im.rowchunks_exact();
+                assert!(rowchunk_iter.next_back().is_some());
+                assert!(rowchunk_iter.next_back().is_some());
+                assert!(rowchunk_iter.next_back().is_some());
+                assert!(rowchunk_iter.next_back().is_some());
+                assert!(rowchunk_iter.next_back().is_none());
+            }
+
+            // test interleaved forward and backward iteration
+            {
+                let mut rowchunk_iter = im.rowchunks_exact();
+                let row5 = rowchunk_iter.next_back();
+                assert_eq!(row5, Some(&[52, 53][..]));
+                let row2 = rowchunk_iter.next();
+                assert_eq!(row2, Some(&[22, 23][..]));
+                let row4 = rowchunk_iter.next_back();
+                assert_eq!(row4, Some(&[42, 43][..]));
+                let row3 = rowchunk_iter.next();
+                assert_eq!(row3, Some(&[32, 33][..]));
+                assert_eq!(rowchunk_iter.next_back(), None);
+            }
+        }
     }
 }
